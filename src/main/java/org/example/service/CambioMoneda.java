@@ -6,14 +6,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
 
 public final class CambioMoneda {
 
-    public static Double getCambio(double valor,String moneda,int opcion) throws IOException, InterruptedException {
+    public static Double getCambio(double valor,String monedaOrigenInput, String monedaDestinoInput) throws IOException, InterruptedException {
 
-        String url = "https://v6.exchangerate-api.com/v6/8b15bb5843d03119213936ff/latest/USD";
+        String url = "https://v6.exchangerate-api.com/v6/8b15bb5843d03119213936ff/latest/" + monedaOrigenInput;
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -25,13 +24,14 @@ public final class CambioMoneda {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rootNode = objectMapper.readTree(response.body());
 
-        double factorCambio = rootNode.path("conversion_rates").path(moneda).asDouble();
+        double factorCambio = rootNode.path("conversion_rates").path(monedaDestinoInput).asDouble();
 
-        if ( opcion % 2 == 0){
-            return valor / factorCambio;
-        } else {
-            return valor * factorCambio;
-        }
+        double resultado = valor * factorCambio;
+
+        System.out.printf("El valor %.2f [%s] corresponde al valor final de =>>> %.2f [%s]%n%n",
+                    valor, monedaOrigenInput, resultado, monedaDestinoInput);
+
+        return resultado;
 
     }
 }
